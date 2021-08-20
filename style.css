@@ -1,0 +1,258 @@
+:root {
+  --background: #303030;
+  --text-primary: #eaeaea;
+  --toggle-dark: #445970;
+  --toggle-light: #7f93ab;
+  --toggle-border: #E3#8EC;
+}
+
+body {
+  margin: 0;
+  width: calc(100vw - 2rem);
+  height: calc(100vh - 2rem);
+  overflow: hidden;
+  background-color: var(--background);
+  color: var(--text-primary);
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 66.8vw 30vw;
+  grid-template-rows: 10vh 85vh;
+  grid-template-areas:
+    'header header'
+    'content sidebar';
+}
+
+header,
+main,
+aside {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+}
+
+header {
+  grid-area: header;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+}
+main {
+  grid-area: content;
+  display: grid;
+  grid-template-rows: 35vh 50vh;
+  grid-template-areas:
+    'choices'
+    'path';
+}
+aside {
+  grid-area: sidebar;
+}
+
+#choices {
+  grid-area: choices;
+  width: calc(100% - 2rem);
+  height: calc(100% - 1.5rem);
+  margin: 1rem 1rem 0.5rem 1rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 17vh 18vh;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+#display {
+  grid-area: path;
+  width: 100%;
+  height: 100%;
+}
+
+#race {
+  width: calc(100% - 4rem);
+  height: calc(100% - 2rem);
+  margin: 1rem 2rem;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 30% 70%;
+  grid-template-areas:
+    'toggle toggle'
+    'choice bonus';
+}
+#race-toggle {
+  grid-area: toggle;
+}
+#race-picker {
+  grid-area: choice;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: center;
+}
+#bonus-stat {
+  grid-area: bonus;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#race-gen {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#path-choice {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  overflow: hidden;
+  height: calc(100% - 2rem);
+  margin: 1rem;
+}
+#path-choice div {
+  width: 33.3%;
+  display: flex;
+  flex-flow: column;
+  justify-content: space-evenly;
+  padding: 0.5rem;
+}
+#path-choice div button {
+  margin-bottom: 1rem;
+}
+#path-choice div span {
+  overflow-y: scroll;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: inherit;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: inherit;
+  border-radius: 12px;
+}
+*:hover::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  border-radius: 12px;
+}
+
+#path-result {
+  width: calc(100% - 2rem);
+  height: calc(100% - 1.5rem);
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  margin: 0.5rem 1rem 1rem 1rem;
+}
+#path-result h2 {
+  text-align: center;
+}
+
+#path {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: calc(100% - 2rem);
+  height: calc(88% - 2rem);
+  margin: 1rem;
+  overflow-y: scroll;
+}
+#path ul {
+  width: calc(50% - 2rem);
+}
+#path ul li {
+  margin-bottom: 0.75rem;
+}
+
+#stats-display {
+  margin: 1rem;
+  width: calc(100% - 2rem);
+  height: calc(50% - 2rem);
+}
+#stats-display h2 {
+  text-align: center;
+}
+#class-suggest {
+  margin: 1rem;
+  width: calc(100% - 2rem);
+  height: calc(100% - 2rem);
+}
+#class-suggest h2 {
+  text-align: center;
+}
+/* the toggle */
+/* Hide default input */
+.toggle input {
+  display: none;
+}
+
+/* The container and background */
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 144px;
+  height: 30px;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--toggle-light);
+  border: 1px solid var(--toggle-dark);
+  border-radius: 5px;
+  transition: all 0.4s;
+}
+
+/* The sliding button */
+.slider::before {
+  position: absolute;
+  content: '';
+  width: 24px;
+  height: 24px;
+  left: 2px;
+  top: 2px;
+  background-color: var(--toggle-dark);
+  border-radius: 5px;
+  transition: all 0.4s;
+}
+
+/* On checked */
+input:checked + .slider::before {
+  transform: translateX(114px);
+}
+
+/* Generate text */
+.slider::after {
+  position: absolute;
+  content: 'Generate Race';
+  top: 6px;
+  right: 5px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Choose text */
+input:checked + .slider::after {
+  content: 'Choose Race';
+  left: 6px;
+}
+
+.hide {
+  display: none !important;
+}
+.center {
+  width: 100%;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+}

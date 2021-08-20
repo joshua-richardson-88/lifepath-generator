@@ -1,0 +1,2764 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+      :root {
+        --background: #303030;
+        --text-primary: #eaeaea;
+        --toggle-dark: #445970;
+        --toggle-light: #7f93ab;
+        --toggle-border: #E3#8EC;
+      }
+
+      body {
+        margin: 0;
+        width: calc(100vw - 2rem);
+        height: calc(100vh - 2rem);
+        overflow: hidden;
+        background-color: var(--background);
+        color: var(--text-primary);
+        padding: 1rem;
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: 66.8vw 30vw;
+        grid-template-rows: 10vh 85vh;
+        grid-template-areas:
+          'header header'
+          'content sidebar';
+      }
+
+      header,
+      main,
+      aside {
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+      }
+
+      header {
+        grid-area: header;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: center;
+        align-items: center;
+      }
+      main {
+        grid-area: content;
+        display: grid;
+        grid-template-rows: 35vh 50vh;
+        grid-template-areas:
+          'choices'
+          'path';
+      }
+      aside {
+        grid-area: sidebar;
+      }
+
+      #choices {
+        grid-area: choices;
+        width: calc(100% - 2rem);
+        height: calc(100% - 1.5rem);
+        margin: 1rem 1rem 0.5rem 1rem;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 14.4vh 18vh;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 6px;
+      }
+      #display {
+        grid-area: path;
+        width: 100%;
+        height: 100%;
+      }
+
+      #race {
+        width: calc(100% - 4rem);
+        height: calc(100% - 2rem);
+        margin: 1rem 2rem;
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 30% 70%;
+        grid-template-areas:
+          'toggle toggle'
+          'choice bonus';
+      }
+      #race-toggle {
+        grid-area: toggle;
+      }
+      #race-picker {
+        grid-area: choice;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        align-items: center;
+      }
+      #bonus-stat {
+        grid-area: bonus;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      #race-gen {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      #path-choice {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        overflow: hidden;
+        height: calc(100% - 2rem);
+        margin: 1rem;
+      }
+      #path-choice div {
+        width: 33.3%;
+        display: flex;
+        flex-flow: column;
+        justify-content: space-evenly;
+        padding: 0.5rem;
+      }
+      #path-choice div button {
+        margin-bottom: 1rem;
+      }
+      #path-choice div span {
+        overflow-y: scroll;
+      }
+
+      *::-webkit-scrollbar {
+        width: 6px;
+      }
+      *::-webkit-scrollbar-track {
+        background: inherit;
+      }
+      *::-webkit-scrollbar-thumb {
+        background-color: inherit;
+        border-radius: 12px;
+      }
+      *:hover::-webkit-scrollbar-thumb {
+        background-color: #bbb;
+        border-radius: 12px;
+      }
+
+      #path-result {
+        width: calc(100% - 2rem);
+        height: calc(100% - 1.5rem);
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 6px;
+        margin: 0.5rem 1rem 1rem 1rem;
+      }
+      #path-result h2 {
+        text-align: center;
+      }
+
+      #path {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        width: calc(100% - 2rem);
+        height: calc(88% - 2rem);
+        margin: 1rem;
+        overflow-y: scroll;
+      }
+      #path ul {
+        width: calc(50% - 2rem);
+      }
+      #path ul li {
+        margin-bottom: 0.75rem;
+      }
+
+      #stats-display {
+        margin: 1rem;
+        width: calc(100% - 2rem);
+        height: calc(50% - 2rem);
+      }
+      #stats-display h2 {
+        text-align: center;
+      }
+      #class-suggest {
+        margin: 1rem;
+        width: calc(100% - 2rem);
+        height: calc(100% - 2rem);
+      }
+      #class-suggest h2 {
+        text-align: center;
+      }
+      /* the toggle */
+      /* Hide default input */
+      .toggle input {
+        display: none;
+      }
+
+      /* The container and background */
+      .toggle {
+        position: relative;
+        display: inline-block;
+        width: 144px;
+        height: 30px;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--toggle-light);
+        border: 1px solid var(--toggle-dark);
+        border-radius: 5px;
+        transition: all 0.4s;
+      }
+
+      /* The sliding button */
+      .slider::before {
+        position: absolute;
+        content: '';
+        width: 24px;
+        height: 24px;
+        left: 2px;
+        top: 2px;
+        background-color: var(--toggle-dark);
+        border-radius: 5px;
+        transition: all 0.4s;
+      }
+
+      /* On checked */
+      input:checked + .slider::before {
+        transform: translateX(114px);
+      }
+
+      /* Generate text */
+      .slider::after {
+        position: absolute;
+        content: 'Generate Race';
+        top: 6px;
+        right: 5px;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      /* Choose text */
+      input:checked + .slider::after {
+        content: 'Choose Race';
+        left: 6px;
+      }
+
+      .hide {
+        display: none !important;
+      }
+      .center {
+        width: 100%;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: center;
+        align-items: center;
+      }
+
+      @media screen and (max-height: 700px) {
+        body {
+          height: 1000px;
+          overflow: visible;
+        }
+
+        body {
+          height: 1000px;
+          overflow-y: visible;
+          overflow-x: hidden;
+          grid-template-columns: 66.8vw 30vw;
+          grid-template-rows: 100px 850px;
+          grid-template-areas:
+            'header header'
+            'content sidebar';
+        }
+
+        header,
+        main,
+        aside {
+          width: 100%;
+          height: 100%;
+          background-color: rgba(255, 255, 255, 0.1);
+          border-radius: 6px;
+        }
+
+        header {
+          grid-area: header;
+          display: flex;
+          flex-flow: row nowrap;
+          justify-content: center;
+          align-items: center;
+        }
+        main {
+          grid-area: content;
+          display: grid;
+          grid-template-rows: 350px 500px;
+          grid-template-areas:
+            'choices'
+            'path';
+        }
+        aside {
+          grid-area: sidebar;
+        }
+
+        #choices {
+          grid-area: choices;
+          width: calc(100% - 2rem);
+          height: calc(100% - 1.5rem);
+          margin: 1rem 1rem 0.5rem 1rem;
+          display: grid;
+          grid-template-columns: 1fr;
+          grid-template-rows: 125px 208px;
+          background-color: rgba(255, 255, 255, 0.05);
+          border-radius: 6px;
+        }
+        #display {
+          grid-area: path;
+          width: 100%;
+          height: 100%;
+        }
+
+        #race {
+          width: calc(100% - 4rem);
+          height: calc(100% - 2rem);
+          margin: 1rem 2rem;
+          display: grid;
+          gap: 1rem;
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: 30% 70%;
+          grid-template-areas:
+            'toggle toggle'
+            'choice bonus';
+        }
+        #race-toggle {
+          grid-area: toggle;
+        }
+        #race-picker {
+          grid-area: choice;
+          display: flex;
+          flex-flow: row nowrap;
+          justify-content: space-between;
+          align-items: center;
+        }
+        #bonus-stat {
+          grid-area: bonus;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        #race-gen {
+          height: 100%;
+          width: 100%;
+          display: flex;
+          flex-flow: row nowrap;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        #path-choice {
+          display: flex;
+          flex-flow: row nowrap;
+          justify-content: space-between;
+          overflow: hidden;
+          height: calc(100% - 2rem);
+          margin: 1rem;
+        }
+        #path-choice div {
+          width: 33.3%;
+          display: flex;
+          flex-flow: column;
+          justify-content: space-evenly;
+          padding: 0.5rem;
+        }
+        #path-choice div button {
+          margin-bottom: 1rem;
+        }
+        #path-choice div span {
+          overflow-y: scroll;
+        }
+
+        *::-webkit-scrollbar {
+          width: 6px;
+        }
+        *::-webkit-scrollbar-track {
+          background: inherit;
+        }
+        *::-webkit-scrollbar-thumb {
+          background-color: inherit;
+          border-radius: 12px;
+        }
+        *:hover::-webkit-scrollbar-thumb {
+          background-color: #bbb;
+          border-radius: 12px;
+        }
+
+        #path-result {
+          width: calc(100% - 2rem);
+          height: calc(100% - 1.5rem);
+          background-color: rgba(255, 255, 255, 0.05);
+          border-radius: 6px;
+          margin: 0.5rem 1rem 1rem 1rem;
+        }
+        #path-result h2 {
+          text-align: center;
+        }
+
+        #path {
+          display: flex;
+          flex-flow: row nowrap;
+          justify-content: space-between;
+          align-items: flex-start;
+          width: calc(100% - 2rem);
+          height: calc(88% - 2rem);
+          margin: 1rem;
+          overflow-y: scroll;
+        }
+        #path ul {
+          width: calc(50% - 2rem);
+        }
+        #path ul li {
+          margin-bottom: 0.75rem;
+        }
+
+        #stats-display {
+          margin: 1rem;
+          width: calc(100% - 2rem);
+          height: calc(50% - 2rem);
+        }
+        #stats-display h2 {
+          text-align: center;
+        }
+        #class-suggest {
+          margin: 1rem;
+          width: calc(100% - 2rem);
+          height: calc(100% - 2rem);
+        }
+        #class-suggest h2 {
+          text-align: center;
+        }
+      }
+    </style>
+
+    <title>Life Experience Generator</title>
+  </head>
+  <body>
+    <header>
+      <h1>Life Experience Generator</h1>
+    </header>
+    <main>
+      <article id="choices">
+        <section id="race">
+          <div class="center" id="race-toggle">
+            <label class="toggle">
+              <input type="checkbox" id="race-checkbox" />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div id="race-picker">
+            <div id="race-gen">
+              <button id="race-roll-btn" class="btn">Roll</button>
+              <div id="race-roll-display"></div>
+            </div>
+            <div id="race-choose" class="hide">
+              <span>What are you?</span>
+              <select id="race-select"></select>
+            </div>
+          </div>
+          <div id="bonus-stat" class="hide">
+            <span>Choose your bonus stat:</span>
+            <select id="race-stat-select">
+              <option value="$">----------------------</option>
+              <option value="0">Strength</option>
+              <option value="1">Dexterity</option>
+              <option value="2">Constitution</option>
+              <option value="3">Intelligence</option>
+              <option value="4">Wisdom</option>
+              <option value="5">Charisma</option>
+            </select>
+            <span id="race-stat-value"></span>
+          </div>
+        </section>
+        <section id="path-choice">
+          <div>
+            <button id="academic" class="btn">The Academic</button>
+            <span>
+              Those with an insatiable thirst for knowledge follow the Academic Path. This path can
+              run through the hallways of a large University, the dusty tables of a forgotten
+              library, or even a monastery for the pious. Characters that start this path usually
+              have the goal of becoming a Wizard, Cleric, or Druid. Studies can range from Arcana to
+              Wildlife. The life experiences above will shape your character’s history and their
+              abilities.
+            </span>
+          </div>
+          <div>
+            <button id="wanderer" class="btn">The Wanderer</button>
+            <span>
+              The Life Experience Path offers characters a diverse collection of experiences. Those
+              that follow this path are not gifted with a keen intellect or the discipline required
+              of a soldier. This path can lead through a large metropolis or wander around a small
+              hamlet. Players that start this path may be unsure of what they want to do. Other know
+              that this is the path that leads to classes such as Rogue, Ranger, Monk, Bard,
+              Sorcerer, and Warlock.
+            </span>
+          </div>
+          <div>
+            <button id="soldier" class="btn">The Soldier</button>
+            <span>
+              The Military Path is for those individuals that have the discipline and honor to serve
+              with their fellow man in hopes of a greater good. Players that walk this path are
+              looking to become Fighters, Paladins, or War Clerics. Some characters may be forced
+              onto this path, while other readily volunteer. It is a dangerous, but rewarding path.
+              The spoils of war are not always gold and land, sometimes they are honor and
+              brotherhood.
+            </span>
+          </div>
+        </section>
+      </article>
+      <article id="path-result">
+        <h2>The Road so far...</h2>
+        <section id="path"></section>
+      </article>
+    </main>
+    <aside>
+      <article id="stats">
+        <section id="stats-display">
+          <h2>Character Attributes</h2>
+          <div id="attributes"></div>
+        </section>
+        <section id="class-suggest">
+          <h2>Suggested Classes</h2>
+          <div id="class-display"></div>
+        </section>
+      </article>
+    </aside>
+
+    <script type="text/javascript">
+      const data = {
+        race: [
+          {
+            id: 0,
+            name: 'Tiefling',
+            stats: [0, 0, 0, 1, 0, 2, 0],
+          },
+          {
+            id: 1,
+            name: 'Half-Orc',
+            stats: [2, 0, 1, 0, 0, 0, 0],
+          },
+          {
+            id: 2,
+            name: 'Half-Elf',
+            stats: [0, 0, 0, 0, 0, 2, 1],
+          },
+          {
+            id: 3,
+            name: 'Hill Dwarf',
+            stats: [0, 0, 2, 0, 1, 0, 0],
+          },
+          {
+            id: 4,
+            name: 'Mountain Dwarf',
+            stats: [1, 0, 2, 0, 0, 0, 0],
+          },
+          {
+            id: 5,
+            name: 'Lightfoot Halfling',
+            stats: [0, 2, 0, 0, 0, 1, 0],
+          },
+          {
+            id: 6,
+            name: 'Stout Halfling',
+            stats: [0, 2, 1, 0, 0, 0, 0],
+          },
+          {
+            id: 7,
+            name: 'Human',
+            stats: [1, 1, 1, 1, 1, 1, 0],
+          },
+          {
+            id: 8,
+            name: 'High Elf',
+            stats: [0, 2, 0, 1, 0, 0, 0],
+          },
+          {
+            id: 9,
+            name: 'Wood Elf',
+            stats: [0, 2, 0, 0, 1, 0, 0],
+          },
+          {
+            id: 10,
+            name: 'Drow Elf',
+            stats: [0, 2, 0, 0, 0, 1, 0],
+          },
+          {
+            id: 11,
+            name: 'Forest Gnome',
+            stats: [0, 0, 1, 2, 0, 0, 0],
+          },
+          {
+            id: 12,
+            name: 'Rock Gnome',
+            stats: [0, 1, 0, 2, 0, 0, 0],
+          },
+          {
+            id: 13,
+            name: 'Dragonborn',
+            stats: [2, 0, 0, 0, 0, 1, 0],
+          },
+        ],
+        class: [
+          {
+            name: 'Barbarian',
+            stat1: 0,
+            stat2: 2,
+          },
+          {
+            name: 'Bard',
+            stat1: 5,
+            stat2: 1,
+          },
+          {
+            name: 'Cleric',
+            stat1: 4,
+            stat2: 0,
+          },
+          {
+            name: 'Druid',
+            stat1: 4,
+            stat2: 2,
+          },
+          {
+            name: 'Fighter',
+            stat1: 0,
+            stat2: 1,
+          },
+          {
+            name: 'Monk',
+            stat1: 1,
+            stat2: 4,
+          },
+          {
+            name: 'Paladin',
+            stat1: 0,
+            stat2: 5,
+          },
+          {
+            name: 'Ranger',
+            stat1: 1,
+            stat2: 4,
+          },
+          {
+            name: 'Rogue',
+            stat1: 1,
+            stat2: 3,
+          },
+          {
+            name: 'Sorcerer',
+            stat1: 5,
+            stat2: 2,
+          },
+          {
+            name: 'Warlock',
+            stat1: 5,
+            stat2: 2,
+          },
+          {
+            name: 'Wizard',
+            stat1: 3,
+            stat2: 1,
+          },
+        ],
+        path: {
+          academic: [
+            {
+              id: 0,
+              text: 'Caught with banned books. Expelled.',
+              stats: [0, 0, 0, 0, 0, 0],
+              jump: 'wanderer',
+            },
+            {
+              id: 1,
+              text: 'Joined scientific expedition for month. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 2,
+              text: 'Poisoned by large spider in library. Recover. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 3,
+              text: 'Took job as delivery boy for campus mail system. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 4,
+              text: 'Spent month studying nature. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 5,
+              text: 'Discovered rare tome of obscure subject. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 6,
+              text: 'Took a month to rally for workers rights under a brutal leader. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 7,
+              text: 'Forced to avoid crazy Ex while attending classes. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 8,
+              text: 'Roomed with a student from another realm. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 9,
+              text: 'Shanghaied. Forced to serve on pirate ship.',
+              stats: [0, 0, 0, 0, 0, 0],
+              jump: 'military',
+            },
+            {
+              id: 10,
+              text: 'Earned money transcribing spell books for a month. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 11,
+              text: 'Death of a close friend brings meaning to your life. WIS +2',
+              stats: [0, 0, 0, 0, 2, 0],
+              jump: 0,
+            },
+            {
+              id: 12,
+              text: 'Spent month studying architecture of nearby castle. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 13,
+              text: 'Omens become more clear and meaningful to you. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 14,
+              text: 'Hiked across realm collecting insect samples. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 15,
+              text: 'Worked in a mine as a mineral identifier. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 16,
+              text: 'Ran for local political office. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 17,
+              text: 'Grew up hunting with a bow. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 18,
+              text: "Father instilled love of books. Didn't play outside much. INT +2, CON -1",
+              stats: [0, 0, -1, 2, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 19,
+              text: 'Cared for elderly relative. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 20,
+              text: 'Raised by low level noble parents. Best of all things. Educated. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 21,
+              text: 'First Aid course turns real when goblins attack. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 22,
+              text: 'Have a knack for Chess. Play constantly. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 23,
+              text: 'Study animal tracks in the field. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 24,
+              text: 'Housekeeper is a horrible cook. Manage to survive. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 25,
+              text: 'Like to gamble. Lose regularly. Have to fight off bookies. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 26,
+              text: "Hang head wizard's hat on flagpole. DEX +1",
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 27,
+              text: 'Overcome your shyness and become more outgoing. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 28,
+              text: 'Scale the highest peak in the area in your free time. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 29,
+              text: 'Wizard creates spell to build muscle. He gets rich. You get stronger. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 30,
+              text: 'Discovered extinct primitive cult. Wrote book on their lore. INT +2',
+              stats: [0, 0, 0, 2, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 31,
+              text: 'Close relative was a healer. Taught you many things. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 32,
+              text: 'Solved riddle that barred entry to an ancient tomb. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 33,
+              text: 'Helped clear out an undead problem at local cemetery. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 34,
+              text: 'Alchemy experiment goes awry. You get faster. DEX +1, INT -1',
+              stats: [0, 1, 0, -1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 35,
+              text: "Crashed the Dean's Dinner uninvited. Blended in. CHA +1",
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 36,
+              text: 'Whittled small wooden animals for local children. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 37,
+              text: 'Learned to dance. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 38,
+              text: 'Field trip to other planes of existence. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 39,
+              text: 'Campus hit by worst ice storm in history. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 40,
+              text: 'Preformed autopsies on several condemned prisoners. WIS +2',
+              stats: [0, 0, 0, 0, 2, 0],
+              jump: 0,
+            },
+            {
+              id: 41,
+              text: 'Learned to play the flute. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 42,
+              text: 'Spell backfires. Fries your frontal lobe. INT -1',
+              stats: [0, 0, 0, -1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 43,
+              text: 'Rebound books for extra money. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 44,
+              text: 'Sampling tree bark run into Treant. Exchange knowledge. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 45,
+              text: 'Study Astronomy and the movements of the moon. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 46,
+              text: 'Identified illness spreading through village. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 47,
+              text: "Edited Professor's newly written book. INT +2",
+              stats: [0, 0, 0, 2, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 48,
+              text: 'One month tutelage under bad teacher. WIS -1',
+              stats: [0, 0, 0, 0, -1, 0],
+              jump: 0,
+            },
+            {
+              id: 49,
+              text: 'Mapped nearby river. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 50,
+              text: 'Developed a drug habit. WIS -1',
+              stats: [0, 0, 0, 0, -1, 0],
+              jump: 0,
+            },
+            {
+              id: 51,
+              text: 'Discovered two new species of plants. Useful in Alchemy. INT +2',
+              stats: [0, 0, 0, 2, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 52,
+              text: 'Helped elderly cleric minister to the poor. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 53,
+              text: 'Helped create constructs for head wizard. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 54,
+              text: 'Forecasted a major flood and saved numerous lives. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 55,
+              text: 'Contract major illness. Unable to study or attend classes. INT -1',
+              stats: [0, 0, 0, -1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 56,
+              text: 'Robbed at knife point. Talked thugs out of it. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 57,
+              text: 'Tamed a small bear with treats and soft words. WIS +2',
+              stats: [0, 0, 0, 0, 0, 2],
+              jump: 0,
+            },
+            {
+              id: 58,
+              text: 'Out ran a supposedly tamed bear when it attacked a crowd. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 59,
+              text: 'You find a ship wreck, in the desert. Copied strange symbols. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 60,
+              text: 'Joined the choir to impress the opposite sex. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 61,
+              text: 'Researched venomous snakes. Wrote a paper. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 62,
+              text: 'You take a month off to find yourself. CHA +1, WIS -1',
+              stats: [0, 0, 0, 0, -1, 1],
+              jump: 0,
+            },
+            {
+              id: 63,
+              text: 'Repaired fishing nets for room and board. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 64,
+              text: 'Elected Academic body president. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 65,
+              text: 'Shortest route to class was across roof tops. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 66,
+              text: 'Successfully brew homemade healing potion. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 67,
+              text: 'Received a "first" in cantrips. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 68,
+              text: 'Introduced to mysticism. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 69,
+              text: 'Created overly elaborate mechanism to turn book pages. INT +2',
+              stats: [0, 0, 0, 2, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 70,
+              text: 'Was assigned a dorm on the 8th floor. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 71,
+              text: 'Went without sleep for three days while exams were given. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 72,
+              text: 'Started "filling out". Better late than never. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 73,
+              text: 'Lonely nights. You learned to roll coins on your fingers. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 74,
+              text: 'Research trip to ancient ruins. Pack animals died. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 75,
+              text: 'One month at a local monastery. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 76,
+              text: 'Sat in on inquest jury. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 77,
+              text: 'Professor killed by bugbear. Visiting elven scholar fills in. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 78,
+              text: 'Tamed Elementals for basics course. Rock drop on foot. WIS +2, DEX -1',
+              stats: [0, -1, 0, 0, 2, 0],
+              jump: 0,
+            },
+            {
+              id: 79,
+              text: 'Conjured a devil, just to see if it actually worked. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 80,
+              text: 'Delivered a baby during a terrible storm. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 81,
+              text: 'Translated ancient scroll into common INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 82,
+              text: 'Passed off transmuted copper as silver. Made 300 gold CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 83,
+              text: 'Snuck into class late every day for a month. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 84,
+              text: 'Saved fellow student from a collapsing bookshelf. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 85,
+              text: 'Pranked the University with an illusionary Dragon. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 86,
+              text: 'Lived with primitive people learned from their medicine man. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 87,
+              text: 'Enchanted a kobold that followed you around for a week. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 88,
+              text: 'Blessed words from your deity fall on your ears. WIS+2',
+              stats: [0, 0, 0, 0, 2, 0],
+              jump: 0,
+            },
+            {
+              id: 89,
+              text: 'Disillusioned with academic system. Set out on your own.',
+              stats: [0, 0, 0, 0, 0, 0],
+              jump: 'wanderer',
+            },
+            {
+              id: 90,
+              text: 'Talked your way into a class you were not qualified for. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 91,
+              text: 'Fireball training! DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 92,
+              text: 'Worked special effects for local theater. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 93,
+              text: 'Four weeks with a Master Diviner. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 94,
+              text: 'One month crafting Holy Symbols WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 95,
+              text: 'Locked yourself out of your own room. Picked the lock. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 96,
+              text: 'Climbed a cliff face to retrieve rare feather for spell. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 97,
+              text: 'Completed a four week fast. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 98,
+              text: 'War breaks out. Drafted in military service.',
+              stats: [0, 0, 0, 0, 0, 0],
+              jump: 'military',
+            },
+            {
+              id: 99,
+              text: 'Survived childhood sickness. CONT +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+          ],
+          wanderer: [
+            {
+              id: 0,
+              text: 'Arrested. Sentence: infantry service.',
+              stats: [0, 0, 0, 0, 0, 0],
+              jump: 'military',
+            },
+            {
+              id: 1,
+              text: 'Dusty hovel you moved into had three books left behind. INT +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 2,
+              text: 'Tracked an animal for two weeks across snow and ice. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 3,
+              text: 'Dock worker. Loading and unloading. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 4,
+              text: 'Learned to juggle. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 5,
+              text: 'Born with great looks. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 6,
+              text: 'Stable work. Worked with many horses. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 7,
+              text: '8 Arrested. One month hard labor. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 8,
+              text: 'Studied the philosophy of nothingness. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 9,
+              text: 'Scholarship awarded. Enroll at local Academy.',
+              stats: [0, 0, 0, 0, 0, 0],
+              jump: 'academic',
+            },
+            {
+              id: 10,
+              text: 'Sold snake oil until the Towne Council shut you down. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 11,
+              text: 'Made ends meet by doing street magic. Sleight of hand. DEX +2',
+              stats: [0, 2, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 12,
+              text: 'Owned a pub for a month. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 13,
+              text: 'Worked the shell game in a large city. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 14,
+              text: 'Survived a fever that killed many. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 15,
+              text: 'Sailed a ship using the stars for guidance. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 16,
+              text: 'Family home attacked by bandits. Rendered first aid to those injured. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 17,
+              text: 'Built a log cabin by hand. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 18,
+              text: 'Natural with a musical instrument. Not fond of reading. CHA +2, INT -1',
+              stats: [0, 0, 0, -1, 0, 2],
+              jump: 0,
+            },
+            {
+              id: 19,
+              text: 'Traveled with a carnival. Worked with the knife thrower. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 20,
+              text: 'Played in a band. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 21,
+              text: 'Escaped capture when guards were out to arrest you. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 22,
+              text: 'Come from a noble background. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 23,
+              text: 'Avid bird hunter. Crossbow is weapon of choice. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 24,
+              text: 'Survived merchant ship sinking. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 25,
+              text: 'Worked as an appraiser for several clients. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 26,
+              text: 'Part-time grave digging work. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 27,
+              text: 'Discovered a cave network behind a waterfall. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 28,
+              text: 'Farm job pays the bills. CON+1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 29,
+              text: 'Got drunk and passed out on a stack of books. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 30,
+              text: 'Have a natural talent for negotiating. CHA +2',
+              stats: [0, 0, 0, 0, 0, 2],
+              jump: 0,
+            },
+            {
+              id: 31,
+              text: 'Grew up as an orphan on the streets. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 32,
+              text: 'You were groomed to be the village story teller. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 33,
+              text: 'You are greedy. If you see something you want, you just lift it. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 34,
+              text: 'Cut across the face in a bar fight. CHA -1, CON +1',
+              stats: [0, 0, 1, 0, 0, -1],
+              jump: 0,
+            },
+            {
+              id: 35,
+              text: 'You track and hunted creatures opposed to your morality. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 36,
+              text:
+                'Your village was attack when you were a child. You harbor urges for revenge. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 37,
+              text: 'After a string of defeats, you learned humility. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 38,
+              text: 'You are a seducer. You manipulate the opposite sex with your charm. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 39,
+              text: 'Trained as the village bell ringer. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 40,
+              text: 'Allowed to train with monks. DEX +2',
+              stats: [0, 2, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 41,
+              text: 'You murdered someone over something minor. Feel guilty. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 42,
+              text: 'Voice cracks every time you try to speak. CHA -1',
+              stats: [0, 0, 0, 0, 0, -1],
+              jump: 0,
+            },
+            {
+              id: 43,
+              text: 'You swam a great lake near your hometown. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 44,
+              text: 'Your people have a tradition of walking on hot coals. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 45,
+              text: 'Supervised a trade caravan on a long dangerous trek. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 46,
+              text: 'Assisted a clock maker for many weeks. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 47,
+              text: 'Eloquent speaker with a huge vocabulary. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 48,
+              text: 'Suffered hand injury while loading crates. DEX -1',
+              stats: [0, -1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 49,
+              text: 'Worked as a bouncer at a local pub. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 50,
+              text: 'Failed to pay debts. Leg broken. DEX -1',
+              stats: [0, -1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 51,
+              text: 'Born leader. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 52,
+              text: 'Your people are renowned for their archery skills. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 53,
+              text: 'You are a liar. You lie all the time. You could be lying right now. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 54,
+              text: 'Captured live birds and sold them to travelers. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 55,
+              text: 'Body odor is unbearable. CHA -1',
+              stats: [0, 0, 0, 0, 0, -1],
+              jump: 0,
+            },
+            {
+              id: 56,
+              text: 'On a dare, you did find a needle in a haystack. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 57,
+              text: 'Crossed a 300 foot rope bridge in a wind storm. DEX +2',
+              stats: [0, 2, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 58,
+              text: 'You made a chunk of money arm wrestling in pubs. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 59,
+              text: 'Youngest person elected to the Towne Council. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 60,
+              text: 'Studied under an enlightened monk. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 61,
+              text: 'Worked as a guard. Tied up prisoners. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 62,
+              text: 'Manual Labor job. STR +1, DEX -1',
+              stats: [1, -1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 63,
+              text: 'Chopped wood for days at a time after your last breakup. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 64,
+              text: 'Survived in the wild for a month after a natural disaster. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 65,
+              text: 'Part time blacksmith. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 66,
+              text: 'Escaped a prison after you were wrongly arrested. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 67,
+              text: 'You are a talented Tenor. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 68,
+              text: 'Spent some time as a snaked handler. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 69,
+              text: 'Gamble frequently. Great bluffer. CHA +2',
+              stats: [0, 0, 0, 0, 0, 2],
+              jump: 0,
+            },
+            {
+              id: 70,
+              text: 'You have an affinity for the law, but have never gone to school. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 71,
+              text: 'When you were born, you were left to die. You survived. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 72,
+              text: 'Lived with a native tribe for a while. Learned to forage berries. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 73,
+              text: 'Competed in a strong man event. Came in third. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 74,
+              text: 'You are one of those annoying people full of trivia. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 75,
+              text: "Tortured to reveal a partner's location. CON +1",
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 76,
+              text: 'Circus work. Tight-rope walker. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 77,
+              text: 'Worked undercover as a spy for rival nobles. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 78,
+              text: 'Make a meager living picking pockets. DEX +2, CON -1',
+              stats: [0, 2, -1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 79,
+              text: 'You are a rabble rouser. You alone have started five riots. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 80,
+              text: 'Apprenticed as a sculptor. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 81,
+              text: 'You are wonderful with children. They love you. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 82,
+              text: 'Your people were persecuted. The clergy hid and cared for you. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 83,
+              text: 'Carried a broken wagon four miles to the nearest town. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 84,
+              text: 'You survived a demonic possession as a child. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 85,
+              text: 'You collect rare books. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 86,
+              text: 'Self-taught on the flute. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 87,
+              text: 'You have great hand-eye coordination. Enjoy sport. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 88,
+              text: 'You know every pub song ever sung. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 89,
+              text: 'Worked the ropes on a ship for a month. DEX +2',
+              stats: [0, 2, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 90,
+              text: 'Local Militia offer signing bonus. 300gp for 2 years service.',
+              stats: [0, 0, 0, 0, 0, 0],
+              jump: 'military',
+            },
+            {
+              id: 91,
+              text: 'Attended to the injured after earthquake. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 92,
+              text: 'Manned the gong for the royal court. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 93,
+              text: 'Forgave an enemy on his death bed. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 94,
+              text: 'Leader of a highway bandit crew. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 95,
+              text: 'Worked as the town animal catcher. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 96,
+              text: 'Construction work at a nearby Keep. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 97,
+              text: 'Traded in scrolls for a brief time. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 98,
+              text: 'You can hold your breath for five minutes. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 99,
+              text: 'A Higher Power calls. You yearn for knowledge.',
+              stats: [0, 0, 0, 0, 0, 0],
+              jump: 'academic',
+            },
+          ],
+          military: [
+            {
+              id: 0,
+              text: 'Insubordination. Relieved from duty.',
+              stats: [0, 0, 0, 0, 0, 0],
+              jump: 'wanderer',
+            },
+            {
+              id: 1,
+              text: 'Studied historical battles. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 2,
+              text: 'Mediated military disputes between soldiers. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 3,
+              text: 'Joined the Archer corps. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 4,
+              text: 'Marched barefoot for twenty miles. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 5,
+              text: 'In charge of placing the horses in armor. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 6,
+              text: 'Lead your men on an assault. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 7,
+              text: 'Dodged every arrow during an ambush. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 8,
+              text: 'Rallied your troops when the odds were against you. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 9,
+              text: 'Master Tactician. Promoted to Officer School.',
+              stats: [0, 0, 0, 0, 0, 0],
+              jump: 'academic',
+            },
+            {
+              id: 10,
+              text: 'Built a bridge during a campaign against enemy forces. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 11,
+              text: 'Channeled your inner rage. CON +2',
+              stats: [0, 0, 2, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 12,
+              text: 'Weapon training with heavy arms. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 13,
+              text: 'Served on a ship. Learned to drink like a sailor. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 14,
+              text: 'Assistant to the General. Worked with battle maps. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 15,
+              text: 'Integrated magic into an assault. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 16,
+              text: 'Lead a mounted division. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 17,
+              text: 'Crossbow practice. Placed first. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 18,
+              text: 'Wrestled bears to show off and prove strength. STR +1, INT -1',
+              stats: [1, 0, 0, -1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 19,
+              text: 'Bitter winter during a tour of duty. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 20,
+              text: 'Naturally athletic. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 21,
+              text: 'Jungle mission. Withstood thousands of insect bites. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 22,
+              text: 'Deck Duty on a Navy Ship. Riggings and sails. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 23,
+              text: 'Food poisoning spreads through camp. Your mom cooks worse. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 24,
+              text: 'Successfully tracked enemy troops through mountains. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 25,
+              text: 'Planned a perfect ambush. Lost no men. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 26,
+              text: 'Infiltrated enemy headquarters. Extracted information. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 27,
+              text: 'Turned a double agent. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 28,
+              text: 'Identified a spy in your ranks. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 29,
+              text: 'Got a ship to port after the death of your captain. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 30,
+              text: 'Loaded the catapult during a siege. STR +2',
+              stats: [2, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 31,
+              text: 'Survived several battles with numerous injuries. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 32,
+              text: 'Carried two injured soldiers to safety. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 33,
+              text: 'Ate the heart of your enemy. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 34,
+              text: 'Fought a giant scorpion. Only got stung once. DEX +1, CON -1',
+              stats: [0, 1, -1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 35,
+              text: 'Instigated a successful mutiny. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 36,
+              text: 'Worked the crow’s nest during rough seas. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 37,
+              text: 'Appointed liaison for an occupied town. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 38,
+              text: 'Hoisted up the anchor on a ship. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 39,
+              text: 'Deserted a battle and escaped while being pursued. DEX +1 ',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 40,
+              text: 'Worked the war-forge making weapons. CON+2',
+              stats: [0, 0, 2, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 41,
+              text: 'Gambled with the officers. Took them for two months wages. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 42,
+              text: 'Kicked by a Calvary horse. In coma for a month. STR -1',
+              stats: [-1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 43,
+              text: 'Screwed up. Got put on potato peeling duty. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 44,
+              text: 'Stuck out a one month siege of your keep. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 45,
+              text: 'Buried the fallen. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 46,
+              text: 'Had four arrows removed from your leg. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 47,
+              text: 'Worked the battering ram. STR +1 ',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 48,
+              text: 'Contracted disease while serving abroad. CON -1',
+              stats: [0, 0, -1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 49,
+              text: 'Dug latrines for entire company STR +1 ',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 50,
+              text: 'Punctured a lung in a battle. CON -1',
+              stats: [0, 0, -1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 51,
+              text: 'Captured and used as slave labor. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 52,
+              text: 'Completed a 300 mile crusade in the name of King and God. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 53,
+              text: 'Forage patrol. Looted a ten mile swath along the main line. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 54,
+              text: 'Rode out a famine while pinned down at a fort. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 55,
+              text: 'Tore shoulder muscle in a duel. STR -1',
+              stats: [-1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 56,
+              text: 'Conscripted peasants for large offensive. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 57,
+              text: 'Stranded on deserted island after shipwreck. CON +2',
+              stats: [0, 0, 2, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 58,
+              text: 'Repaired saddles for the mounted division. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 59,
+              text: 'Cut timber and helped build a barracks. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 60,
+              text: 'Negotiated a surrender from an enemy. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 61,
+              text: 'Received forty lashes for punching an officer. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 62,
+              text: 'Talked your way out of Physical Training. CHA +1, STR -1',
+              stats: [-1, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 63,
+              text: 'Learned dozens of knots while working on ship. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 64,
+              text: 'Swore vengeance against a foe that wiped out your company. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 65,
+              text: 'Functioned as a sniper. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 66,
+              text: 'Stood guard duty in the worst weather possible. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 67,
+              text: 'Lifted a horse off a comrade that was cut down. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 68,
+              text: 'You often boxed fellow soldiers for cash and rations. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 69,
+              text: 'Was assigned oar duty on a warship. STR +2',
+              stats: [2, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 70,
+              text: 'Calculated trajectories for siege weapons. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 71,
+              text: 'Served as a scout. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 72,
+              text: 'Inspired a dying soldier. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 73,
+              text: 'Assassinated a commander of enemy troops with one shot. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 74,
+              text: 'Created a logistical system to supply the main army. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 75,
+              text: 'Helped out in the medical camp. Tended to the injured. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 76,
+              text: 'Had an arrow pushed through and snapped off. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 77,
+              text: 'Nine kills during hand to hand combat. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 78,
+              text: 'Arm was caught in the main ropes of a war machine. CON +2, DEX -1',
+              stats: [0, -1, 2, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 79,
+              text: 'Appointed executioner of prisoners. Beheading with an axe. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 80,
+              text: 'Endured hot iron branding. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 81,
+              text: 'Holy words inspired your bravery and made you stronger. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 82,
+              text: 'Impressed the General and received a promotion. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 83,
+              text: 'Snuck onto an enemy ship and sabotaged it. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 84,
+              text: 'Saw a deity on the battlefield. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 85,
+              text: 'Managed supply lines for a battalion. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 86,
+              text: 'Carried your regimental colors. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 87,
+              text: 'Went without sleep for days while observing enemy positions. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 88,
+              text: 'Cranked back a ballista by yourself. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 89,
+              text: 'Your whole body is tattooed. CON +2',
+              stats: [0, 0, 2, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 90,
+              text: 'Angered a group of officers. Discharged.',
+              stats: [0, 0, 0, 0, 0, 0],
+              jump: 'wanderer',
+            },
+            {
+              id: 91,
+              text: 'Bestowed honors of bravery by the King of the realm. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 92,
+              text: 'Ran a message through the battlefield to the Lord in charge. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 93,
+              text: 'Honorably disarmed and faced an enemy with fists. CHA +1',
+              stats: [0, 0, 0, 0, 0, 1],
+              jump: 0,
+            },
+            {
+              id: 94,
+              text: 'Fought off a pack of war dog while defending a fallen soldier. STR +1',
+              stats: [1, 0, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 95,
+              text: 'Continued fighting while you were on fire. CON +1',
+              stats: [0, 0, 1, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 96,
+              text: 'Disarmed an enemy trap. DEX +1',
+              stats: [0, 1, 0, 0, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 97,
+              text: 'Made money dealing in contraband. Economic of war. INT +1',
+              stats: [0, 0, 0, 1, 0, 0],
+              jump: 0,
+            },
+            {
+              id: 98,
+              text: 'Saw the true face of evil and swore to destroy it. WIS +1',
+              stats: [0, 0, 0, 0, 1, 0],
+              jump: 0,
+            },
+            {
+              id: 99,
+              text: 'Military cuts. The brightest are sent to College, congratulations.',
+              stats: [0, 0, 0, 0, 0, 0],
+              jump: 'academic',
+            },
+          ],
+        },
+      };
+      // race select section elements
+      const raceCheckbox = document.getElementById('race-checkbox');
+      const generateSection = document.getElementById('race-gen');
+      const raceRollBtn = document.getElementById('race-roll-btn');
+      const raceRollDisplay = document.getElementById('race-roll-display');
+      const chooseSection = document.getElementById('race-choose');
+      const bonusStat = document.getElementById('bonus-stat');
+      const raceStatSelect = document.getElementById('race-stat-select');
+      const raceStatValue = document.getElementById('race-stat-value');
+      const raceSelect = document.getElementById('race-select');
+
+      // path section elements
+      const academicBtn = document.getElementById('academic');
+      const wandererBtn = document.getElementById('wanderer');
+      const soldierBtn = document.getElementById('soldier');
+      const pathDisplay = document.getElementById('path');
+      const MAX_RUNS = 15;
+
+      // stats elements
+      const statsDisplay = document.getElementById('attributes');
+      const classDisplay = document.getElementById('class-display');
+
+      // player record
+      const player = {
+        race: {},
+        statName: ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'],
+        baseStats: [10, 10, 10, 10, 10, 10],
+        currentStats: [10, 10, 10, 10, 10, 10],
+        trueClass: [],
+        possibleClass: [],
+        events: [],
+      };
+
+      // display the race generator or race selector
+      raceCheckbox.addEventListener('click', (event) => {
+        if (event.target.checked) {
+          generateSection.classList.add('hide');
+          chooseSection.classList.remove('hide');
+        } else {
+          generateSection.classList.remove('hide');
+          chooseSection.classList.add('hide');
+        }
+        if (!bonusStat.classList.contains('hide')) {
+          bonusStat.classList.add('hide');
+        }
+        player.race = {};
+      });
+
+      // generate race
+      raceRollBtn.addEventListener('click', (event) => {
+        const roll = Math.floor(Math.random() * data.race.length);
+        const p = document.createElement('span');
+        p.innerText = `Congratulations, its a ${data.race[roll].name}!`;
+
+        player.race = { ...data.race[roll] };
+
+        // for anything that has the 'pick a stat' section
+        if (player.race.stats[6] > 0) {
+          let stat;
+          for (let i = 0; i < player.race.stats.length - 1; i++) {
+            console.log(player.race.stats[i]);
+            if (player.race.stats[i] > 0) stat = i + 1;
+          }
+          for (let i = 0; i < raceStatSelect.options.length; i++) {
+            raceStatSelect.options[i].disabled = i === stat ? true : false;
+          }
+
+          if (bonusStat.classList.contains('hide')) bonusStat.classList.remove('hide');
+        } else {
+          // make sure the bonus stat select is hidden unless we need it
+          if (!bonusStat.classList.contains('hide')) bonusStat.classList.add('hide');
+        }
+
+        raceRollDisplay.innerHTML = '';
+        raceRollDisplay.appendChild(p);
+        updatePlayer();
+      });
+
+      // choose race
+      raceSelect.addEventListener('change', (event) => {
+        const selected = event.target.options[event.target.selectedIndex].value;
+        player.race = selected !== '$' ? { ...data.race[selected] } : {};
+        if (player.race.stats[6] > 0) {
+          let stat;
+          for (let i = 0; i < player.race.stats.length - 1; i++) {
+            console.log(player.race.stats[i]);
+            if (player.race.stats[i] > 0) stat = i + 1;
+          }
+          for (let i = 0; i < raceStatSelect.options.length; i++) {
+            raceStatSelect.options[i].disabled = i === stat ? true : false;
+          }
+
+          if (bonusStat.classList.contains('hide')) bonusStat.classList.remove('hide');
+        } else {
+          // make sure the bonus stat select is hidden unless we need it
+          if (!bonusStat.classList.contains('hide')) bonusStat.classList.add('hide');
+        }
+        updatePlayer();
+      });
+
+      // for races with bonus picker, listen to the select
+      raceStatSelect.addEventListener('change', (event) => {
+        const choice = event.target.options[event.target.selectedIndex].value;
+        player.race.choice = choice !== '$' ? choice : null;
+        updatePlayer();
+      });
+
+      // update player stats
+      const updatePlayer = () => {
+        player.currentStats = player.baseStats.slice();
+        player.trueClass = [];
+        player.possibleClass = [];
+
+        // we need to check lifepath first to get un-biased results
+        if (player.events.length > 0) {
+          // we may need to re-roll stats. So set up the flag, and count the event rolls
+          // if any stat is greater than 18, or more than 2 stats are greater than 16... re-roll
+          // first add the stats
+          player.events.forEach((choice) => addStats(choice.stats));
+
+          // then we need to check the stats
+          let sortArray = [...player.currentStats];
+          sortArray.sort((a, b) => {
+            return b - a;
+          });
+          // if the largest stat is higher than 18, the second stat is less than 15 (need at least 2 15s)
+          // or the third stat is above 15 (no more than 2 15s)
+          if (sortArray[0] > 18 || sortArray[1] < 15 || sortArray[2] > 15) {
+            lifePath(player.choice);
+            return false;
+          }
+
+          const highestInd = player.currentStats.indexOf(sortArray[0]);
+          const secondInd = player.currentStats.indexOf(sortArray[1]);
+
+          // figure out which class is best for the player
+          for (let i = 0; i < data.class.length; i++) {
+            if (data.class[i].stat1 === highestInd && data.class[i].stat2 === secondInd) {
+              player.trueClass.push(data.class[i].name);
+            } else if (data.class[i].stat1 === highestInd && data.class[i].stat2 !== secondInd) {
+              player.possibleClass.push(data.class[i].name);
+            }
+          }
+        }
+
+        // if there was a choice in the player's racial bonus
+        if (player.race.name && player.race.choice) {
+          // reset race bonus
+          player.race.stats = data.race[player.race.id].stats.slice();
+          // increase the chosen stat by the race's bonus
+          player.race.stats[player.race.choice] = player.race.stats[6];
+        }
+        // redundant with above, but wanted this to only run when
+        // race had been chosen
+        if (player.race.name) addStats(player.race.stats);
+
+        // reset the DOM
+        statsDisplay.innerHTML = '';
+        classDisplay.innerHTML = '';
+
+        // add the elements to the stats DOM node
+        for (let i = 0; i < player.baseStats.length; i++) {
+          const p = document.createElement('p');
+          p.innerText = `${player.statName[i]}: ${player.currentStats[i]}`;
+          statsDisplay.appendChild(p);
+        }
+
+        // add the elements to the class DOM node
+        if (player.trueClass.length > 0) {
+          const p = document.createElement('p');
+          let string = 'A perfect class fit for this character is: ';
+          for (let i = 0; i < player.trueClass.length; i++) {
+            if (player.trueClass.length === 1) {
+              string += player.trueClass[i];
+            } else if (i < player.trueClass.length - 1) {
+              string += player.trueClass[i] + ', ';
+            } else {
+              string += `and ${player.trueClass[i]}`;
+            }
+
+            p.innerText = string;
+            classDisplay.appendChild(p);
+          }
+        }
+        if (player.possibleClass.length > 0) {
+          const p = document.createElement('p');
+          let string = 'A class that is a close fit for this character is: ';
+          for (let i = 0; i < player.possibleClass.length; i++) {
+            if (player.possibleClass.length === 1) {
+              string += player.possibleClass[i];
+            } else if (i < player.possibleClass.length - 1) {
+              string += player.possibleClass[i] + ', ';
+            } else {
+              string += `and ${player.possibleClass[i]}`;
+            }
+            p.innerText = string;
+            classDisplay.appendChild(p);
+          }
+        }
+        console.log(player);
+      };
+
+      // add arrays together
+      const addStats = (arr) => {
+        for (let i = 0; i < player.baseStats.length; i++) {
+          player.currentStats[i] += arr[i];
+        }
+      };
+
+      // update the choose race options
+      const updateRaceChoice = () => {
+        raceSelect.innerHTML = '<option value="$">----------------------</option>';
+        for (let i = 0; i < data.race.length; i++) {
+          const option = document.createElement('option');
+          option.value = i;
+          option.innerText = data.race[i].name;
+          raceSelect.appendChild(option);
+        }
+      };
+
+      // generate life path
+      const lifePath = (choice) => {
+        let branch = choice;
+        player.choice = choice;
+        player.events = [];
+
+        // add the events
+        for (let i = 0; i < MAX_RUNS; i++) {
+          let goodChoice = false;
+          let event;
+
+          while (!goodChoice) {
+            const roll = Math.floor(Math.random() * data.path[branch].length);
+            event = data.path[branch][roll];
+            // if the event is already part of the path, set goodChoice to false to continue to loop
+            // otherwise its a good choice, set to true and continue the for loop
+            goodChoice = player.events.filter((e) => e.id === event.id).length > 0 ? false : true;
+          }
+
+          player.events.push(event);
+
+          if (event.jump !== 0) {
+            branch = event.jump;
+            i--;
+          }
+        }
+        updatePlayer();
+        updateDisplay();
+      };
+
+      const updateDisplay = () => {
+        pathDisplay.innerHTML = '';
+        let list1 = document.createElement('ul');
+        let list2 = document.createElement('ul');
+        let itemsInList = Math.floor(player.events.length / 2);
+        itemsInList = player.events.length % 2 === 1 ? itemsInList + 1 : itemsInList;
+        for (let i = 0; i < player.events.length; i++) {
+          const item = document.createElement('li');
+          item.innerText = player.events[i].text;
+          i < itemsInList ? list1.appendChild(item) : list2.appendChild(item);
+        }
+        pathDisplay.appendChild(list1);
+        pathDisplay.appendChild(list2);
+      };
+
+      // life path button listeners
+      academicBtn.addEventListener('click', () => lifePath('academic'));
+      wandererBtn.addEventListener('click', () => lifePath('wanderer'));
+      soldierBtn.addEventListener('click', () => lifePath('military'));
+
+      // when page loads, display base data and fill select
+      updatePlayer();
+      updateRaceChoice();
+    </script>
+  </body>
+</html>
